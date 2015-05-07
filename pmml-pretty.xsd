@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.dmg.org/PMML-3_2" elementFormDefault="unqualified" targetNamespace="http://www.dmg.org/PMML-3_2">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.dmg.org/PMML-4_0" elementFormDefault="unqualified" targetNamespace="http://www.dmg.org/PMML-4_0">
   <xs:complexType mixed="true" name="ArrayType">
     <xs:attribute name="n" type="INT-NUMBER" use="optional"/>
     <xs:attribute name="type" use="required">
@@ -12,6 +12,7 @@
       </xs:simpleType>
     </xs:attribute>
   </xs:complexType>
+  <xs:element name="ARIMA"/>
   <xs:element name="Aggregate">
     <xs:complexType>
       <xs:attribute name="field" type="FIELD-NAME" use="required"/>
@@ -36,6 +37,36 @@
   </xs:element>
   <xs:element name="Annotation">
     <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Anova">
+    <xs:complexType>
+      <xs:attribute name="target" type="FIELD-NAME"/>
+      <xs:sequence>
+        <xs:element maxOccurs="3" minOccurs="3" ref="AnovaRow"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AnovaRow">
+    <xs:complexType>
+      <xs:attribute name="degreesOfFreedom" type="NUMBER" use="required"/>
+      <xs:attribute name="fValue" type="NUMBER"/>
+      <xs:attribute name="meanOfSquares" type="NUMBER"/>
+      <xs:attribute name="pValue" type="PROB-NUMBER"/>
+      <xs:attribute name="sumOfSquares" type="NUMBER" use="required"/>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="Error"/>
+            <xs:enumeration value="Model"/>
+            <xs:enumeration value="Total"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
       </xs:sequence>
@@ -82,16 +113,15 @@
       <xs:attribute name="numberOfRules" type="INT-NUMBER" use="required"/>
       <xs:attribute name="numberOfTransactions" type="INT-NUMBER" use="required"/>
       <xs:sequence>
-        <xs:choice maxOccurs="unbounded" minOccurs="0">
-          <xs:element ref="AssociationRule"/>
-          <xs:element ref="Itemset"/>
-        </xs:choice>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="AssociationRule"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Item"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Itemset"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
+        <xs:element minOccurs="0" ref="Output"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -104,6 +134,38 @@
       <xs:attribute name="lift" type="xs:float" use="optional"/>
       <xs:attribute name="support" type="PROB-NUMBER" use="required"/>
       <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="BaseCumHazardTables">
+    <xs:complexType>
+      <xs:attribute name="maxTime" type="REAL-NUMBER" use="optional"/>
+      <xs:sequence>
+        <xs:choice>
+          <xs:element maxOccurs="unbounded" ref="BaselineCell"/>
+          <xs:element maxOccurs="unbounded" ref="BaselineStratum"/>
+        </xs:choice>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="BaselineCell">
+    <xs:complexType>
+      <xs:attribute name="cumHazard" type="REAL-NUMBER" use="required"/>
+      <xs:attribute name="time" type="REAL-NUMBER" use="required"/>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="BaselineStratum">
+    <xs:complexType>
+      <xs:attribute name="label" type="xs:string"/>
+      <xs:attribute name="maxTime" type="REAL-NUMBER" use="required"/>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="BaselineCell"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
       </xs:sequence>
     </xs:complexType>
@@ -132,6 +194,22 @@
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element ref="TargetValueCounts"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="BoundaryValueMeans">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group ref="NUM-ARRAY"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="BoundaryValues">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group ref="NUM-ARRAY"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -164,6 +242,14 @@
           <xs:element ref="TableLocator"/>
         </xs:choice>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ClassLabels">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group ref="STRING-ARRAY"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -223,10 +309,18 @@
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
         <xs:element minOccurs="0" ref="MissingValueWeights"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element minOccurs="0" ref="Output"/>
       </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ClusteringModelQuality">
+    <xs:complexType>
+      <xs:attribute name="SSB" type="NUMBER" use="optional"/>
+      <xs:attribute name="SSE" type="NUMBER" use="optional"/>
+      <xs:attribute name="dataName" type="xs:string" use="optional"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="Coefficient">
@@ -322,6 +416,15 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="ConfusionMatrix">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ClassLabels"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="Matrix"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="ConsequentSequence">
     <xs:complexType>
       <xs:sequence>
@@ -371,11 +474,46 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="CorrelationFields">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group ref="STRING-ARRAY"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CorrelationMethods">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="Matrix"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CorrelationValues">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="Matrix"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Correlations">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="CorrelationFields"/>
+        <xs:element minOccurs="0" ref="CorrelationMethods"/>
+        <xs:element ref="CorrelationValues"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Counts">
     <xs:complexType>
-      <xs:attribute name="invalidFreq" type="xs:nonNegativeInteger"/>
-      <xs:attribute name="missingFreq" type="xs:nonNegativeInteger"/>
-      <xs:attribute name="totalFreq" type="xs:nonNegativeInteger" use="required"/>
+      <xs:attribute name="cardinality" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="invalidFreq" type="NUMBER"/>
+      <xs:attribute name="missingFreq" type="NUMBER"/>
+      <xs:attribute name="totalFreq" type="NUMBER" use="required"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
       </xs:sequence>
@@ -450,8 +588,11 @@
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
+        <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element ref="Node"/>
+        <xs:element minOccurs="0" ref="Output"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="ResultField"/>
+        <xs:element minOccurs="0" ref="Targets"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -527,6 +668,35 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="EventValues">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Interval"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Value"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ExponentialSmoothing">
+    <xs:complexType>
+      <xs:attribute name="RMSE" type="REAL-NUMBER"/>
+      <xs:attribute default="none" name="transformation">
+        <xs:simpleType>
+          <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="logarithmic"/>
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="squareroot"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:sequence>
+        <xs:element maxOccurs="1" minOccurs="1" ref="Level"/>
+        <xs:element maxOccurs="1" minOccurs="0" ref="Seasonality_ExpoSmooth"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="TimeValue"/>
+        <xs:element maxOccurs="1" minOccurs="0" ref="Trend"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Extension">
     <xs:complexType>
       <xs:complexContent mixed="true">
@@ -575,14 +745,8 @@
   </xs:element>
   <xs:element name="GeneralRegressionModel">
     <xs:complexType>
-      <!-- The attribute targetVariableName is optional, usage is deprecated -->
-      <!-- It is for information only, anyway. -->
-      <!-- Use usageType="predicted" in MiningField instead -->
-      <!-- The attributes linkFunction, linkParameter, trialsVariable, trialsValue, distribution,
-                    distParameter, offsetVariable, offsetValue are added. 
-                    The first six are only relevant for generalizedLinear model type, 
-                    offsetVariable and offsetValue can be used for generalizedLinear or ordinalMultinomial. -->
       <xs:attribute name="algorithmName" type="xs:string"/>
+      <xs:attribute name="baselineStrataVariable" type="FIELD-NAME"/>
       <xs:attribute name="cumulativeLink" type="CUMULATIVE-LINK-FUNCTION"/>
       <xs:attribute name="distParameter" type="REAL-NUMBER"/>
       <xs:attribute name="distribution">
@@ -594,17 +758,20 @@
             <xs:enumeration value="negbin"/>
             <xs:enumeration value="normal"/>
             <xs:enumeration value="poisson"/>
+            <xs:enumeration value="tweedie"/>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
+      <xs:attribute name="endTimeVariable" type="FIELD-NAME"/>
       <xs:attribute name="functionName" type="MINING-FUNCTION" use="required"/>
       <xs:attribute name="linkFunction" type="LINK-FUNCTION"/>
       <xs:attribute name="linkParameter" type="REAL-NUMBER"/>
+      <xs:attribute name="modelDF" type="REAL-NUMBER"/>
       <xs:attribute name="modelName" type="xs:string"/>
       <xs:attribute name="modelType" use="required">
         <xs:simpleType>
-          <!-- The model type generalizedLinear is added. -->
           <xs:restriction base="xs:string">
+            <xs:enumeration value="CoxRegression"/>
             <xs:enumeration value="generalLinear"/>
             <xs:enumeration value="generalizedLinear"/>
             <xs:enumeration value="multinomialLogistic"/>
@@ -615,16 +782,23 @@
       </xs:attribute>
       <xs:attribute name="offsetValue" type="REAL-NUMBER"/>
       <xs:attribute name="offsetVariable" type="FIELD-NAME"/>
+      <xs:attribute name="startTimeVariable" type="FIELD-NAME"/>
+      <xs:attribute name="statusVariable" type="FIELD-NAME"/>
+      <xs:attribute name="subjectIDVariable" type="FIELD-NAME"/>
+      <xs:attribute name="targetReferenceCategory" type="xs:string"/>
       <xs:attribute name="targetVariableName" type="FIELD-NAME"/>
       <xs:attribute name="trialsValue" type="INT-NUMBER"/>
       <xs:attribute name="trialsVariable" type="FIELD-NAME"/>
       <xs:sequence>
+        <xs:element minOccurs="0" ref="BaseCumHazardTables"/>
         <xs:element minOccurs="0" ref="CovariateList"/>
+        <xs:element minOccurs="0" ref="EventValues"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="FactorList"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element minOccurs="0" ref="Output"/>
@@ -735,6 +909,38 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="Level">
+    <xs:complexType>
+      <xs:attribute name="alpha" type="REAL-NUMBER" use="optional"/>
+      <xs:attribute name="cubicSmoothedValue" type="REAL-NUMBER"/>
+      <xs:attribute name="quadraticSmoothedValue" type="REAL-NUMBER"/>
+      <xs:attribute name="smoothedValue" type="REAL-NUMBER"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LiftData">
+    <xs:complexType>
+      <xs:attribute name="rankingQuality" type="NUMBER"/>
+      <xs:attribute name="targetFieldDisplayValue" type="xs:string"/>
+      <xs:attribute name="targetFieldValue" type="xs:string"/>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="ModelLiftGraph"/>
+        <xs:element minOccurs="0" ref="OptimumLiftGraph"/>
+        <xs:element minOccurs="0" ref="RandomLiftGraph"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LiftGraph">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="BoundaryValueMeans"/>
+        <xs:element minOccurs="0" ref="BoundaryValues"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="XCoordinates"/>
+        <xs:element ref="YCoordinates"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="LinearKernelType">
     <xs:complexType>
       <xs:attribute name="description" type="xs:string" use="optional"/>
@@ -837,7 +1043,7 @@
       <xs:attribute name="functionName" type="MINING-FUNCTION" use="required"/>
       <xs:attribute name="modelName" type="xs:string" use="optional"/>
       <xs:sequence>
-        <xs:choice maxOccurs="unbounded">
+        <xs:choice maxOccurs="unbounded" minOccurs="0">
           <xs:element ref="DecisionTree"/>
           <xs:element ref="Regression"/>
         </xs:choice>
@@ -845,9 +1051,11 @@
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element minOccurs="0" ref="Output"/>
+        <xs:element minOccurs="0" ref="Segmentation"/>
         <xs:element minOccurs="0" ref="Targets"/>
       </xs:sequence>
     </xs:complexType>
@@ -865,6 +1073,26 @@
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:group ref="NUM-ARRAY"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ModelExplanation">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice>
+          <xs:element maxOccurs="unbounded" minOccurs="0" ref="ClusteringModelQuality"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" ref="PredictiveModelQuality"/>
+        </xs:choice>
+        <xs:element minOccurs="0" ref="Correlations"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ModelLiftGraph">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="LiftGraph"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -900,6 +1128,7 @@
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element minOccurs="0" ref="Output"/>
@@ -955,6 +1184,7 @@
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element ref="NeuralInputs"/>
@@ -1067,6 +1297,14 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="OptimumLiftGraph">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="LiftGraph"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Output">
     <xs:complexType>
       <xs:sequence>
@@ -1077,11 +1315,40 @@
   </xs:element>
   <xs:element name="OutputField">
     <xs:complexType>
+      <xs:attribute default="exclusiveRecommendation" name="algorithm">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="exclusiveRecommendation"/>
+            <xs:enumeration value="recommendation"/>
+            <xs:enumeration value="ruleAssociation"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
       <xs:attribute name="dataType" type="DATATYPE"/>
       <xs:attribute name="displayName" type="xs:string"/>
       <xs:attribute name="feature" type="RESULT-FEATURE"/>
+      <xs:attribute default="0" name="isMultiValued"/>
       <xs:attribute name="name" type="FIELD-NAME" use="required"/>
       <xs:attribute name="optype" type="OPTYPE"/>
+      <xs:attribute default="1" name="rank" type="INT-NUMBER"/>
+      <xs:attribute default="confidence" name="rankBasis">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="confidence"/>
+            <xs:enumeration value="lift"/>
+            <xs:enumeration value="support"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute default="descending" name="rankOrder">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="ascending"/>
+            <xs:enumeration value="descending"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute default="consequent" name="ruleFeature" type="RULE-FEATURE"/>
       <xs:attribute name="targetField" type="FIELD-NAME"/>
       <xs:attribute name="value" type="xs:string"/>
       <xs:sequence>
@@ -1151,6 +1418,7 @@
             <xs:element ref="SequenceModel"/>
             <xs:element ref="SupportVectorMachineModel"/>
             <xs:element ref="TextModel"/>
+            <xs:element ref="TimeSeriesModel"/>
             <xs:element ref="TreeModel"/>
           </xs:choice>
         </xs:sequence>
@@ -1172,7 +1440,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
-        <xs:element maxOccurs="unbounded" ref="PPCell"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="PPCell"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1189,7 +1457,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
-        <xs:element maxOccurs="unbounded" ref="PCell"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="PCell"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1197,6 +1465,7 @@
     <xs:complexType>
       <xs:attribute name="label" type="xs:string"/>
       <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute default="0" name="referencePoint" type="REAL-NUMBER"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
       </xs:sequence>
@@ -1213,14 +1482,14 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
-        <xs:element maxOccurs="unbounded" ref="Parameter"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Parameter"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="Partition">
     <xs:complexType>
       <xs:attribute name="name" type="xs:string" use="required"/>
-      <xs:attribute name="size" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="size" type="NUMBER"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="PartitionFieldStats"/>
@@ -1230,6 +1499,14 @@
   <xs:element name="PartitionFieldStats">
     <xs:complexType>
       <xs:attribute name="field" type="FIELD-NAME" use="required"/>
+      <xs:attribute default="0" name="weighted">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
       <xs:sequence>
         <xs:element minOccurs="0" ref="Counts"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
@@ -1249,11 +1526,38 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="PredictiveModelQuality">
+    <xs:complexType>
+      <xs:attribute name="dataName" type="xs:string" use="optional"/>
+      <xs:attribute default="training" name="dataUsage">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="test"/>
+            <xs:enumeration value="training"/>
+            <xs:enumeration value="validation"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="meanAbsoluteError" type="NUMBER" use="optional"/>
+      <xs:attribute name="meanError" type="NUMBER" use="optional"/>
+      <xs:attribute name="meanSquaredError" type="NUMBER" use="optional"/>
+      <xs:attribute name="r-squared" type="NUMBER" use="optional"/>
+      <xs:attribute name="targetField" type="xs:string" use="required"/>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="ConfusionMatrix"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element minOccurs="0" ref="LiftData"/>
+        <xs:element minOccurs="0" ref="ROC"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Predictor">
     <xs:complexType>
+      <xs:attribute name="contrastMatrixType" type="xs:string"/>
       <xs:attribute name="name" type="FIELD-NAME" use="required"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element minOccurs="0" ref="Matrix"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1290,12 +1594,42 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="ROC">
+    <xs:complexType>
+      <xs:attribute name="negativeTargetFieldDisplayValue" type="xs:string"/>
+      <xs:attribute name="negativeTargetFieldValue" type="xs:string"/>
+      <xs:attribute name="positiveTargetFieldDisplayValue" type="xs:string"/>
+      <xs:attribute name="positiveTargetFieldValue" type="xs:string" use="required"/>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="ROCGraph"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ROCGraph">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="BoundaryValues"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="XCoordinates"/>
+        <xs:element ref="YCoordinates"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="RadialBasisKernelType">
     <xs:complexType>
       <xs:attribute name="description" type="xs:string" use="optional"/>
       <xs:attribute default="1" name="gamma" type="REAL-NUMBER" use="optional"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RandomLiftGraph">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="LiftGraph"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1308,8 +1642,11 @@
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
+        <xs:element minOccurs="0" ref="ModelStats"/>
+        <xs:element minOccurs="0" ref="Output"/>
         <xs:element maxOccurs="unbounded" ref="RegressionTable"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="ResultField"/>
+        <xs:element minOccurs="0" ref="Targets"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1335,6 +1672,7 @@
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element minOccurs="0" ref="Output"/>
@@ -1408,6 +1746,7 @@
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element minOccurs="0" ref="Output"/>
@@ -1426,11 +1765,55 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="SelectResult">
+  <xs:element name="SeasonalTrendDecomposition"/>
+  <xs:element name="Seasonality_ExpoSmooth">
     <xs:complexType>
-      <xs:attribute name="feature" type="RESULT-FEATURE"/>
-      <xs:attribute name="field" type="FIELD-NAME"/>
-      <xs:attribute name="value" type="xs:string"/>
+      <xs:attribute name="delta" type="REAL-NUMBER" use="optional"/>
+      <xs:attribute name="period" type="INT-NUMBER" use="required"/>
+      <xs:attribute name="phase" type="INT-NUMBER" use="optional"/>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="additive"/>
+            <xs:enumeration value="multiplicative"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="unit" type="xs:string" use="optional"/>
+      <xs:sequence>
+        <xs:group ref="REAL-ARRAY"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Segment">
+    <xs:complexType>
+      <xs:attribute name="id" type="xs:string" use="optional"/>
+      <xs:attribute name="weight" type="NUMBER" use="optional"/>
+      <xs:sequence>
+        <xs:choice>
+          <xs:element ref="ClusteringModel"/>
+          <xs:element ref="Extension"/>
+          <xs:element ref="GeneralRegressionModel"/>
+          <xs:element ref="NaiveBayesModel"/>
+          <xs:element ref="NeuralNetwork"/>
+          <xs:element ref="RegressionModel"/>
+          <xs:element ref="RuleSetModel"/>
+          <xs:element ref="SupportVectorMachineModel"/>
+          <xs:element ref="TreeModel"/>
+        </xs:choice>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group ref="PREDICATE"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Segmentation">
+    <xs:complexType>
+      <xs:attribute name="multipleModelMethod" type="MULTIPLE-MODEL-METHOD" use="required"/>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element minOccurs="0" ref="LocalTransformations"/>
+        <xs:element maxOccurs="unbounded" ref="Segment"/>
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="Sequence">
@@ -1585,6 +1968,7 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="SpectralAnalysis"/>
   <xs:element name="SupportVector">
     <xs:complexType>
       <xs:attribute name="vectorId" type="VECTOR-ID" use="required"/>
@@ -1595,7 +1979,9 @@
   </xs:element>
   <xs:element name="SupportVectorMachine">
     <xs:complexType>
+      <xs:attribute name="alternateTargetCategory" type="xs:string" use="optional"/>
       <xs:attribute name="targetCategory" type="xs:string" use="optional"/>
+      <xs:attribute name="threshold" type="REAL-NUMBER" use="optional"/>
       <xs:sequence>
         <xs:element ref="Coefficients"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
@@ -1606,15 +1992,17 @@
   <xs:element name="SupportVectorMachineModel">
     <xs:complexType>
       <xs:attribute name="algorithmName" type="xs:string" use="optional"/>
-      <xs:attribute name="alternateBinaryTargetCategory" type="xs:string" use="optional"/>
+      <xs:attribute default="OneAgainstAll" name="classificationMethod" type="SVM-CLASSIFICATION-METHOD" use="optional"/>
       <xs:attribute name="functionName" type="MINING-FUNCTION" use="required"/>
       <xs:attribute name="modelName" type="xs:string" use="optional"/>
       <xs:attribute default="SupportVectors" name="svmRepresentation" type="SVM-REPRESENTATION" use="optional"/>
+      <xs:attribute default="0" name="threshold" type="REAL-NUMBER" use="optional"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element minOccurs="0" ref="Output"/>
@@ -1759,6 +2147,7 @@
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element minOccurs="0" ref="Output"/>
@@ -1832,6 +2221,83 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="TimeAnchor">
+    <xs:complexType>
+      <xs:attribute name="displayName" use="optional"/>
+      <xs:attribute name="offset" type="INT-NUMBER"/>
+      <xs:attribute name="stepsize" type="INT-NUMBER"/>
+      <xs:attribute name="type" type="TIME-ANCHOR"/>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="TimeCycle"/>
+        <xs:element maxOccurs="2" minOccurs="0" ref="TimeException"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TimeCycle">
+    <xs:complexType>
+      <xs:attribute name="displayName" use="optional"/>
+      <xs:attribute name="length" type="INT-NUMBER"/>
+      <xs:attribute name="type" type="VALID-TIME-SPEC"/>
+      <xs:sequence>
+        <xs:group maxOccurs="1" minOccurs="0" ref="INT-ARRAY"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TimeException">
+    <xs:complexType>
+      <xs:attribute name="count" type="INT-NUMBER"/>
+      <xs:attribute name="type" type="TIME-EXCEPTION-TYPE"/>
+      <xs:sequence>
+        <xs:group minOccurs="1" ref="INT-ARRAY"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TimeSeries">
+    <xs:complexType>
+      <xs:attribute name="endTime" type="REAL-NUMBER"/>
+      <xs:attribute default="none" name="interpolationMethod" type="INTERPOLATION-METHOD"/>
+      <xs:attribute name="startTime" type="REAL-NUMBER"/>
+      <xs:attribute default="original" name="usage" type="TIMESERIES-USAGE"/>
+      <xs:sequence>
+        <xs:element maxOccurs="1" minOccurs="0" ref="TimeAnchor"/>
+        <xs:element maxOccurs="2" minOccurs="0" ref="TimeException"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="TimeValue"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TimeSeriesModel">
+    <xs:complexType>
+      <xs:attribute name="algorithmName" type="xs:string" use="optional"/>
+      <xs:attribute name="bestFit" type="TIMESERIES-ALGORITHM" use="required"/>
+      <xs:attribute name="functionName" type="MINING-FUNCTION" use="required"/>
+      <xs:attribute name="modelName" type="xs:string" use="optional"/>
+      <xs:sequence>
+        <xs:element maxOccurs="1" minOccurs="0" ref="ARIMA"/>
+        <xs:element maxOccurs="1" minOccurs="0" ref="ExponentialSmoothing"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element minOccurs="0" ref="LocalTransformations"/>
+        <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelStats"/>
+        <xs:element minOccurs="0" ref="ModelVerification"/>
+        <xs:element minOccurs="0" ref="Output"/>
+        <xs:element maxOccurs="1" minOccurs="0" ref="SeasonalTrendDecomposition"/>
+        <xs:element maxOccurs="1" minOccurs="0" ref="SpectralAnalysis"/>
+        <xs:element maxOccurs="3" minOccurs="0" ref="TimeSeries"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TimeValue">
+    <xs:complexType>
+      <xs:attribute name="index" type="INT-NUMBER" use="optional"/>
+      <xs:attribute name="standardError" type="REAL-NUMBER" use="optional"/>
+      <xs:attribute name="time" type="NUMBER" use="optional"/>
+      <xs:attribute name="value" type="REAL-NUMBER" use="required"/>
+      <xs:sequence>
+        <xs:element maxOccurs="1" minOccurs="0" ref="Timestamp"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Timestamp">
     <xs:complexType mixed="true">
       <xs:sequence>
@@ -1869,12 +2335,31 @@
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element minOccurs="0" ref="LocalTransformations"/>
         <xs:element ref="MiningSchema"/>
+        <xs:element minOccurs="0" ref="ModelExplanation"/>
         <xs:element minOccurs="0" ref="ModelStats"/>
         <xs:element minOccurs="0" ref="ModelVerification"/>
         <xs:element ref="Node"/>
         <xs:element minOccurs="0" ref="Output"/>
         <xs:element minOccurs="0" ref="Targets"/>
       </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Trend">
+    <xs:complexType>
+      <xs:attribute name="gamma" type="REAL-NUMBER" use="optional"/>
+      <xs:attribute default="1" name="phi" type="REAL-NUMBER" use="optional"/>
+      <xs:attribute name="smoothedValue" type="REAL-NUMBER" use="required"/>
+      <xs:attribute default="additive" name="trend">
+        <xs:simpleType>
+          <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="additive"/>
+            <xs:enumeration value="damped_additive"/>
+            <xs:enumeration value="damped_multiplicative"/>
+            <xs:enumeration value="double_exponential"/>
+            <xs:enumeration value="multiplicative"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
   <xs:element name="True">
@@ -1887,7 +2372,16 @@
   <xs:element name="UnivariateStats">
     <xs:complexType>
       <xs:attribute name="field" type="FIELD-NAME"/>
+      <xs:attribute default="0" name="weighted">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
       <xs:sequence>
+        <xs:element minOccurs="0" ref="Anova"/>
         <xs:element minOccurs="0" ref="ContStats"/>
         <xs:element minOccurs="0" ref="Counts"/>
         <xs:element minOccurs="0" ref="DiscrStats"/>
@@ -1961,6 +2455,22 @@
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" ref="VerificationField"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="XCoordinates">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group ref="NUM-ARRAY"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="YCoordinates">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group ref="NUM-ARRAY"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -2078,8 +2588,7 @@
   </xs:group>
   <xs:group name="FrequenciesType">
     <xs:sequence>
-      <xs:group ref="INT-ARRAY"/>
-      <xs:group maxOccurs="2" minOccurs="0" ref="NUM-ARRAY"/>
+      <xs:group maxOccurs="3" minOccurs="1" ref="NUM-ARRAY"/>
     </xs:sequence>
   </xs:group>
   <xs:group name="INT-ARRAY">
@@ -2163,6 +2672,7 @@
   </xs:simpleType>
   <xs:simpleType name="DATATYPE">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="boolean"/>
       <xs:enumeration value="date"/>
       <xs:enumeration value="dateDaysSince[0]"/>
       <xs:enumeration value="dateDaysSince[1960]"/>
@@ -2196,6 +2706,8 @@
   <xs:simpleType name="FIELD-USAGE-TYPE">
     <xs:restriction base="xs:string">
       <xs:enumeration value="active"/>
+      <xs:enumeration value="analysisWeight"/>
+      <xs:enumeration value="frequencyWeight"/>
       <xs:enumeration value="group"/>
       <xs:enumeration value="order"/>
       <xs:enumeration value="predicted"/>
@@ -2211,6 +2723,14 @@
   </xs:simpleType>
   <xs:simpleType name="INT-NUMBER">
     <xs:restriction base="xs:integer"/>
+  </xs:simpleType>
+  <xs:simpleType name="INTERPOLATION-METHOD">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="cubicSpline"/>
+      <xs:enumeration value="exponentialSpline"/>
+      <xs:enumeration value="linear"/>
+      <xs:enumeration value="none"/>
+    </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="INVALID-VALUE-TREATMENT-METHOD">
     <xs:restriction base="xs:string">
@@ -2240,6 +2760,7 @@
       <xs:enumeration value="clustering"/>
       <xs:enumeration value="regression"/>
       <xs:enumeration value="sequences"/>
+      <xs:enumeration value="timeSeries"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MISSING-VALUE-STRATEGY">
@@ -2259,6 +2780,19 @@
       <xs:enumeration value="asMedian"/>
       <xs:enumeration value="asMode"/>
       <xs:enumeration value="asValue"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MULTIPLE-MODEL-METHOD">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="average"/>
+      <xs:enumeration value="majorityVote"/>
+      <xs:enumeration value="max"/>
+      <xs:enumeration value="median"/>
+      <xs:enumeration value="selectAll"/>
+      <xs:enumeration value="selectFirst"/>
+      <xs:enumeration value="sum"/>
+      <xs:enumeration value="weightedAverage"/>
+      <xs:enumeration value="weightedMajorityVote"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="NN-NEURON-ID">
@@ -2329,14 +2863,83 @@
       <xs:enumeration value="predictedValue"/>
       <xs:enumeration value="probability"/>
       <xs:enumeration value="residual"/>
+      <xs:enumeration value="ruleValue"/>
       <xs:enumeration value="standardError"/>
       <xs:enumeration value="warning"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="RULE-FEATURE">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="antecedent"/>
+      <xs:enumeration value="confidence"/>
+      <xs:enumeration value="consequent"/>
+      <xs:enumeration value="lift"/>
+      <xs:enumeration value="rule"/>
+      <xs:enumeration value="ruleId"/>
+      <xs:enumeration value="support"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SVM-CLASSIFICATION-METHOD">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="OneAgainstAll"/>
+      <xs:enumeration value="OneAgainstOne"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="SVM-REPRESENTATION">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Coefficients"/>
       <xs:enumeration value="SupportVectors"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TIME-ANCHOR">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="dateDaysSince[0]"/>
+      <xs:enumeration value="dateDaysSince[1960]"/>
+      <xs:enumeration value="dateDaysSince[1970]"/>
+      <xs:enumeration value="dateDaysSince[1980]"/>
+      <xs:enumeration value="dateMonthsSince[0]"/>
+      <xs:enumeration value="dateMonthsSince[1960]"/>
+      <xs:enumeration value="dateMonthsSince[1970]"/>
+      <xs:enumeration value="dateMonthsSince[1980]"/>
+      <xs:enumeration value="dateTimeMillisecdondsSince[0]"/>
+      <xs:enumeration value="dateTimeMillisecdondsSince[1960]"/>
+      <xs:enumeration value="dateTimeMillisecdondsSince[1970]"/>
+      <xs:enumeration value="dateTimeMillisecdondsSince[1980]"/>
+      <xs:enumeration value="dateTimeSecdondsSince[0]"/>
+      <xs:enumeration value="dateTimeSecdondsSince[1960]"/>
+      <xs:enumeration value="dateTimeSecdondsSince[1970]"/>
+      <xs:enumeration value="dateTimeSecdondsSince[1980]"/>
+      <xs:enumeration value="dateYearsSince[0]"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TIME-EXCEPTION-TYPE">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="exclude"/>
+      <xs:enumeration value="include"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TIMESERIES-ALGORITHM">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ARIMA"/>
+      <xs:enumeration value="ExponentialSmoothing"/>
+      <xs:enumeration value="SeasonalTrendDecomposition"/>
+      <xs:enumeration value="SpectralAnalysis"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TIMESERIES-USAGE">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="logical"/>
+      <xs:enumeration value="original"/>
+      <xs:enumeration value="prediction"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="VALID-TIME-SPEC">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="excludeFromTo"/>
+      <xs:enumeration value="excludeSet"/>
+      <xs:enumeration value="includeAll"/>
+      <xs:enumeration value="includeFromTo"/>
+      <xs:enumeration value="includeSet"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="VECTOR-ID">
