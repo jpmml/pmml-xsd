@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.dmg.org/PMML-4_1" elementFormDefault="unqualified" targetNamespace="http://www.dmg.org/PMML-4_1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.dmg.org/PMML-4_2" elementFormDefault="unqualified" targetNamespace="http://www.dmg.org/PMML-4_2">
   <xs:complexType mixed="true" name="ArrayType">
     <xs:attribute name="n" type="INT-NUMBER" use="optional"/>
     <xs:attribute name="type" use="required">
@@ -116,6 +116,7 @@
   </xs:element>
   <xs:element name="Apply">
     <xs:complexType>
+      <xs:attribute name="defaultValue" type="xs:string"/>
       <xs:attribute name="function" type="xs:string" use="required"/>
       <xs:attribute default="returnInvalid" name="invalidValueTreatment" type="INVALID-VALUE-TREATMENT-METHOD"/>
       <xs:attribute name="mapMissingTo" type="xs:string"/>
@@ -172,9 +173,10 @@
   </xs:element>
   <xs:element name="Attribute">
     <xs:complexType>
-      <xs:attribute name="partialScore" type="NUMBER"/>
+      <xs:attribute name="partialScore" type="NUMBER" use="optional"/>
       <xs:attribute name="reasonCode" type="xs:string"/>
       <xs:sequence>
+        <xs:element minOccurs="0" ref="ComplexPartialScore"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:group ref="PREDICATE"/>
       </xs:sequence>
@@ -244,9 +246,14 @@
     <xs:complexType>
       <xs:attribute name="fieldName" type="xs:string" use="required"/>
       <xs:sequence>
-        <xs:element minOccurs="0" ref="DerivedField"/>
+        <xs:choice>
+          <xs:element maxOccurs="1" minOccurs="1" ref="TargetValueStats"/>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="0" ref="DerivedField"/>
+            <xs:element maxOccurs="unbounded" minOccurs="1" ref="PairCounts"/>
+          </xs:sequence>
+        </xs:choice>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
-        <xs:element maxOccurs="unbounded" ref="PairCounts"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -347,6 +354,7 @@
           <xs:element ref="TableLocator"/>
         </xs:choice>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="FieldColumnPair"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -409,7 +417,7 @@
       <xs:attribute name="numberOfClusters" type="INT-NUMBER" use="required"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" ref="Cluster"/>
-        <xs:element maxOccurs="unbounded" minOccurs="0" ref="ClusteringField"/>
+        <xs:element maxOccurs="unbounded" minOccurs="1" ref="ClusteringField"/>
         <xs:element ref="ComparisonMeasure"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
@@ -482,6 +490,14 @@
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element ref="Matrix"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ComplexPartialScore">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group maxOccurs="1" minOccurs="1" ref="EXPRESSION"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1173,7 +1189,7 @@
           <xs:element ref="TableLocator"/>
         </xs:choice>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
-        <xs:element maxOccurs="unbounded" ref="FieldColumnPair"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="FieldColumnPair"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1585,7 +1601,7 @@
       </xs:attribute>
       <xs:attribute name="dataType" type="DATATYPE"/>
       <xs:attribute name="displayName" type="xs:string"/>
-      <xs:attribute name="feature" type="RESULT-FEATURE"/>
+      <xs:attribute default="predictedValue" name="feature" type="RESULT-FEATURE"/>
       <xs:attribute default="0" name="isMultiValued"/>
       <xs:attribute name="name" type="FIELD-NAME" use="required"/>
       <xs:attribute name="optype" type="OPTYPE"/>
@@ -2246,12 +2262,12 @@
   </xs:element>
   <xs:element name="SimpleRule">
     <xs:complexType>
-      <xs:attribute name="confidence" type="NUMBER" use="optional"/>
+      <xs:attribute default="1" name="confidence" type="NUMBER" use="optional"/>
       <xs:attribute name="id" type="xs:string" use="optional"/>
       <xs:attribute name="nbCorrect" type="NUMBER" use="optional"/>
       <xs:attribute name="recordCount" type="NUMBER" use="optional"/>
       <xs:attribute name="score" type="xs:string" use="required"/>
-      <xs:attribute name="weight" type="NUMBER" use="optional"/>
+      <xs:attribute default="1" name="weight" type="NUMBER" use="optional"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="ScoreDistribution"/>
@@ -2398,6 +2414,23 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="TargetValueStat">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" use="required"/>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group minOccurs="1" ref="CONTINUOUS-DISTRIBUTION-TYPES"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TargetValueStats">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element maxOccurs="unbounded" ref="TargetValueStat"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Targets">
     <xs:complexType>
       <xs:sequence>
@@ -2454,6 +2487,57 @@
       <xs:attribute name="length" type="INT-NUMBER" use="optional"/>
       <xs:attribute name="name" type="xs:string" use="optional"/>
       <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TextIndex">
+    <xs:complexType>
+      <xs:attribute default="allHits" name="countHits">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="allHits"/>
+            <xs:enumeration value="bestHits"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute default="false" name="isCaseSensitive" type="xs:boolean"/>
+      <xs:attribute default="termFrequency" name="localTermWeights">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="augmentedNormalizedTermFrequency"/>
+            <xs:enumeration value="binary"/>
+            <xs:enumeration value="logarithmic"/>
+            <xs:enumeration value="termFrequency"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute default="0" name="maxLevenshteinDistance" type="xs:integer"/>
+      <xs:attribute name="textField" type="FIELD-NAME" use="required"/>
+      <xs:attribute default="true" name="tokenize" type="xs:boolean"/>
+      <xs:attribute default="\s" name="wordSeparatorCharacterRE" type="xs:string"/>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="TextIndexNormalization"/>
+        <xs:group ref="EXPRESSION"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="TextIndexNormalization">
+    <xs:complexType>
+      <xs:attribute default="string" name="inField" type="xs:string"/>
+      <xs:attribute name="isCaseSensitive" type="xs:boolean"/>
+      <xs:attribute name="maxLevenshteinDistance" type="xs:integer"/>
+      <xs:attribute default="stem" name="outField" type="xs:string"/>
+      <xs:attribute default="false" name="recursive" type="xs:boolean"/>
+      <xs:attribute default="regex" name="regexField" type="xs:string"/>
+      <xs:attribute name="tokenize" type="xs:boolean"/>
+      <xs:attribute name="wordSeparatorCharacterRE" type="xs:string"/>
+      <xs:sequence>
+        <xs:choice minOccurs="0">
+          <xs:element ref="InlineTable"/>
+          <xs:element ref="TableLocator"/>
+        </xs:choice>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
       </xs:sequence>
     </xs:complexType>
@@ -2939,6 +3023,7 @@
       <xs:element ref="MapValues"/>
       <xs:element ref="NormContinuous"/>
       <xs:element ref="NormDiscrete"/>
+      <xs:element ref="TextIndex"/>
     </xs:choice>
   </xs:group>
   <xs:group name="EmbeddedModel">
@@ -3126,6 +3211,7 @@
       <xs:enumeration value="order"/>
       <xs:enumeration value="predicted"/>
       <xs:enumeration value="supplementary"/>
+      <xs:enumeration value="target"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="GAP">
@@ -3272,18 +3358,26 @@
   <xs:simpleType name="RESULT-FEATURE">
     <xs:restriction base="xs:string">
       <xs:enumeration value="affinity"/>
+      <xs:enumeration value="antecedent"/>
       <xs:enumeration value="clusterAffinity"/>
       <xs:enumeration value="clusterId"/>
+      <xs:enumeration value="confidence"/>
+      <xs:enumeration value="consequent"/>
       <xs:enumeration value="decision"/>
       <xs:enumeration value="entityAffinity"/>
       <xs:enumeration value="entityId"/>
+      <xs:enumeration value="leverage"/>
+      <xs:enumeration value="lift"/>
       <xs:enumeration value="predictedDisplayValue"/>
       <xs:enumeration value="predictedValue"/>
       <xs:enumeration value="probability"/>
       <xs:enumeration value="reasonCode"/>
       <xs:enumeration value="residual"/>
+      <xs:enumeration value="rule"/>
+      <xs:enumeration value="ruleId"/>
       <xs:enumeration value="ruleValue"/>
       <xs:enumeration value="standardError"/>
+      <xs:enumeration value="support"/>
       <xs:enumeration value="transformedValue"/>
       <xs:enumeration value="warning"/>
     </xs:restriction>
