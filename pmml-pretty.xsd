@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.dmg.org/PMML-3_1" elementFormDefault="unqualified" targetNamespace="http://www.dmg.org/PMML-3_1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.dmg.org/PMML-3_2" elementFormDefault="unqualified" targetNamespace="http://www.dmg.org/PMML-3_2">
   <xs:complexType mixed="true" name="ArrayType">
     <xs:attribute name="n" type="INT-NUMBER" use="optional"/>
     <xs:attribute name="type" use="required">
@@ -145,13 +145,6 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="CenterFields">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="DerivedField"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
   <xs:element name="ChildParent">
     <xs:complexType>
       <xs:attribute name="childField" type="xs:string" use="required"/>
@@ -192,6 +185,14 @@
       <xs:attribute name="compareFunction" type="COMPARE-FUNCTION" use="optional"/>
       <xs:attribute name="field" type="FIELD-NAME" use="required"/>
       <xs:attribute default="1" name="fieldWeight" type="REAL-NUMBER"/>
+      <xs:attribute default="true" name="isCenterField">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="false"/>
+            <xs:enumeration value="true"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
       <xs:attribute name="similarityScale" type="REAL-NUMBER" use="optional"/>
       <xs:sequence>
         <xs:element minOccurs="0" ref="Comparisons"/>
@@ -214,7 +215,6 @@
       <xs:attribute name="modelName" type="xs:string" use="optional"/>
       <xs:attribute name="numberOfClusters" type="INT-NUMBER" use="required"/>
       <xs:sequence>
-        <xs:element minOccurs="0" ref="CenterFields"/>
         <xs:element maxOccurs="unbounded" ref="Cluster"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="ClusteringField"/>
         <xs:element ref="ComparisonMeasure"/>
@@ -331,7 +331,11 @@
   </xs:element>
   <xs:element name="Constant">
     <xs:complexType>
-      <xs:attribute name="dataType" type="DATATYPE"/>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="dataType" type="DATATYPE"/>
+        </xs:extension>
+      </xs:simpleContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="Constraints">
@@ -501,7 +505,7 @@
       <xs:attribute name="field" type="FIELD-NAME" use="required"/>
       <xs:attribute name="mapMissingTo" type="xs:string"/>
       <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="DiscretizeBin"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="DiscretizeBin"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
       </xs:sequence>
     </xs:complexType>
@@ -522,18 +526,6 @@
         <xs:element ref="Matrix"/>
       </xs:sequence>
     </xs:complexType>
-  </xs:element>
-  <xs:element name="Entries">
-    <xs:simpleType>
-      <xs:union>
-        <xs:simpleType>
-          <xs:list itemType="xs:int"/>
-        </xs:simpleType>
-        <xs:simpleType>
-          <xs:list itemType="xs:double"/>
-        </xs:simpleType>
-      </xs:union>
-    </xs:simpleType>
   </xs:element>
   <xs:element name="Extension">
     <xs:complexType>
@@ -583,28 +575,50 @@
   </xs:element>
   <xs:element name="GeneralRegressionModel">
     <xs:complexType>
-      <!-- The attribute targetVariableName is now optional, usage is deprecated -->
+      <!-- The attribute targetVariableName is optional, usage is deprecated -->
       <!-- It is for information only, anyway. -->
       <!-- Use usageType="predicted" in MiningField instead -->
-      <!-- The attribute cumulativeLink is added. It is only relevant for ordinalMultinomial model type. -->
+      <!-- The attributes linkFunction, linkParameter, trialsVariable, trialsValue, distribution,
+                    distParameter, offsetVariable, offsetValue are added. 
+                    The first six are only relevant for generalizedLinear model type, 
+                    offsetVariable and offsetValue can be used for generalizedLinear or ordinalMultinomial. -->
       <xs:attribute name="algorithmName" type="xs:string"/>
-      <xs:attribute name="cumulativeLink" type="LINK-FUNCTION"/>
+      <xs:attribute name="cumulativeLink" type="CUMULATIVE-LINK-FUNCTION"/>
+      <xs:attribute name="distParameter" type="REAL-NUMBER"/>
+      <xs:attribute name="distribution">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="binomial"/>
+            <xs:enumeration value="gamma"/>
+            <xs:enumeration value="igauss"/>
+            <xs:enumeration value="negbin"/>
+            <xs:enumeration value="normal"/>
+            <xs:enumeration value="poisson"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
       <xs:attribute name="functionName" type="MINING-FUNCTION" use="required"/>
+      <xs:attribute name="linkFunction" type="LINK-FUNCTION"/>
+      <xs:attribute name="linkParameter" type="REAL-NUMBER"/>
       <xs:attribute name="modelName" type="xs:string"/>
       <xs:attribute name="modelType" use="required">
         <xs:simpleType>
-          <!-- The model type ordinalMultinomial is added. -->
+          <!-- The model type generalizedLinear is added. -->
           <xs:restriction base="xs:string">
             <xs:enumeration value="generalLinear"/>
+            <xs:enumeration value="generalizedLinear"/>
             <xs:enumeration value="multinomialLogistic"/>
             <xs:enumeration value="ordinalMultinomial"/>
             <xs:enumeration value="regression"/>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
+      <xs:attribute name="offsetValue" type="REAL-NUMBER"/>
+      <xs:attribute name="offsetVariable" type="FIELD-NAME"/>
       <xs:attribute name="targetVariableName" type="FIELD-NAME"/>
+      <xs:attribute name="trialsValue" type="INT-NUMBER"/>
+      <xs:attribute name="trialsVariable" type="FIELD-NAME"/>
       <xs:sequence>
-        <!-- The element PPMatrix is now required, was optional. -->
         <xs:element minOccurs="0" ref="CovariateList"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
@@ -634,12 +648,17 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="INT-Entries">
+    <xs:simpleType>
+      <xs:list itemType="xs:int"/>
+    </xs:simpleType>
+  </xs:element>
   <xs:element name="INT-SparseArray">
     <xs:complexType>
       <xs:attribute default="0" name="defaultValue" type="INT-NUMBER" use="optional"/>
       <xs:attribute name="n" type="INT-NUMBER" use="optional"/>
       <xs:sequence>
-        <xs:element minOccurs="0" ref="Entries"/>
+        <xs:element minOccurs="0" ref="INT-Entries"/>
         <xs:element minOccurs="0" ref="Indices"/>
       </xs:sequence>
     </xs:complexType>
@@ -966,6 +985,7 @@
   </xs:element>
   <xs:element name="Neuron">
     <xs:complexType>
+      <xs:attribute name="altitude" type="REAL-NUMBER"/>
       <xs:attribute name="bias" type="REAL-NUMBER"/>
       <xs:attribute name="id" type="NN-NEURON-ID" use="required"/>
       <xs:attribute name="width" type="REAL-NUMBER"/>
@@ -980,12 +1000,13 @@
       <xs:attribute name="defaultChild" type="xs:string"/>
       <xs:attribute name="id" type="xs:string"/>
       <xs:attribute name="recordCount" type="NUMBER"/>
-      <xs:attribute name="score" type="xs:string" use="required"/>
+      <xs:attribute name="score" type="xs:string"/>
       <xs:sequence>
         <xs:choice>
           <xs:group ref="EmbeddedModel"/>
           <xs:sequence>
             <xs:element maxOccurs="unbounded" minOccurs="0" ref="Node"/>
+            <xs:element minOccurs="0" ref="Partition"/>
             <xs:element maxOccurs="unbounded" minOccurs="0" ref="ScoreDistribution"/>
           </xs:sequence>
         </xs:choice>
@@ -997,6 +1018,8 @@
   <xs:element name="NormContinuous">
     <xs:complexType>
       <xs:attribute name="field" type="FIELD-NAME" use="required"/>
+      <xs:attribute name="mapMissingTo" type="NUMBER"/>
+      <xs:attribute default="asIs" name="outliers" type="OUTLIER-TREATMENT-METHOD"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" minOccurs="2" ref="LinearNorm"/>
@@ -1011,7 +1034,6 @@
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:enumeration value="indicator"/>
-            <xs:enumeration value="thermometer"/>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
@@ -1093,6 +1115,14 @@
   </xs:element>
   <xs:element name="PCovMatrix">
     <xs:complexType>
+      <xs:attribute name="type">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="model"/>
+            <xs:enumeration value="robust"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" ref="PCovCell"/>
@@ -1245,13 +1275,18 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="REAL-Entries">
+    <xs:simpleType>
+      <xs:list itemType="xs:double"/>
+    </xs:simpleType>
+  </xs:element>
   <xs:element name="REAL-SparseArray">
     <xs:complexType>
       <xs:attribute default="0" name="defaultValue" type="REAL-NUMBER" use="optional"/>
       <xs:attribute name="n" type="INT-NUMBER" use="optional"/>
       <xs:sequence>
-        <xs:element minOccurs="0" ref="Entries"/>
         <xs:element minOccurs="0" ref="Indices"/>
+        <xs:element minOccurs="0" ref="REAL-Entries"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -1640,11 +1675,12 @@
   <xs:element name="TargetValue">
     <xs:complexType>
       <xs:attribute name="defaultValue" type="NUMBER"/>
+      <xs:attribute name="displayValue" type="xs:string"/>
       <xs:attribute name="priorProbability" type="PROB-NUMBER"/>
-      <xs:attribute name="rawDataValue" type="xs:string"/>
       <xs:attribute name="value" type="xs:string"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element minOccurs="0" ref="Partition"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -2116,6 +2152,15 @@
       <xs:enumeration value="table"/>
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="CUMULATIVE-LINK-FUNCTION">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="cauchit"/>
+      <xs:enumeration value="cloglog"/>
+      <xs:enumeration value="logit"/>
+      <xs:enumeration value="loglog"/>
+      <xs:enumeration value="probit"/>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="DATATYPE">
     <xs:restriction base="xs:string">
       <xs:enumeration value="date"/>
@@ -2176,10 +2221,15 @@
   </xs:simpleType>
   <xs:simpleType name="LINK-FUNCTION">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="cauchit"/>
       <xs:enumeration value="cloglog"/>
+      <xs:enumeration value="identity"/>
+      <xs:enumeration value="log"/>
+      <xs:enumeration value="logc"/>
       <xs:enumeration value="logit"/>
       <xs:enumeration value="loglog"/>
+      <xs:enumeration value="negbin"/>
+      <xs:enumeration value="oddspower"/>
+      <xs:enumeration value="power"/>
       <xs:enumeration value="probit"/>
     </xs:restriction>
   </xs:simpleType>
@@ -2194,6 +2244,7 @@
   </xs:simpleType>
   <xs:simpleType name="MISSING-VALUE-STRATEGY">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="aggregateNodes"/>
       <xs:enumeration value="defaultChild"/>
       <xs:enumeration value="lastPrediction"/>
       <xs:enumeration value="none"/>
@@ -2272,6 +2323,8 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="clusterAffinity"/>
       <xs:enumeration value="clusterId"/>
+      <xs:enumeration value="entityAffinity"/>
+      <xs:enumeration value="entityId"/>
       <xs:enumeration value="predictedDisplayValue"/>
       <xs:enumeration value="predictedValue"/>
       <xs:enumeration value="probability"/>
