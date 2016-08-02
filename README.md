@@ -21,12 +21,12 @@ Comparing one version of the pretty-printed PMML XSD file against some other ver
 git diff <old version> <new version> pmml-pretty.xsd
 ```
 
-The version identifier is one of `3.0`, `3.1`, `3.2`, `4.0`, `4.1` or `4.2`.
+The version identifier is one of `3.0`, `3.1`, `3.2`, `4.0`, `4.1`, `4.2` or `4.3`.
 
 For example, comparing the last two versions:
 
 ```
-git diff 4.1 4.2 pmml-pretty.xsd
+git diff 4.2 4.3 pmml-pretty.xsd
 ```
 
 # Additional information #
