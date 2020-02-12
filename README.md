@@ -7,7 +7,7 @@ A pretty-printed PMML XSD file.
 
 ### Pretty-printing ###
 
-Using the [xsltproc] (http://xmlsoft.org/XSLT/xsltproc.html) command-line application to apply the pretty-printing XSL transformation to a PMML XSD file:
+Using the [xsltproc](http://xmlsoft.org/XSLT/xsltproc.html) command-line application to apply the pretty-printing XSL transformation to a PMML XSD file:
 
 ```
 xsltproc -o pmml-pretty.xsd pretty.xsl xsd/pmml-<version>.xsd
@@ -31,4 +31,4 @@ git diff 4.2 4.3 pmml-pretty.xsd
 
 # Additional information #
 
-Please contact [info@openscoring.io] (mailto:info@openscoring.io)
+Please contact [info@openscoring.io](mailto:info@openscoring.io)
