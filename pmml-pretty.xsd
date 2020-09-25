@@ -547,7 +547,7 @@
         </xs:simpleType>
       </xs:attribute>
       <xs:attribute name="modelName" type="xs:string" use="optional"/>
-      <xs:attribute name="numberOfClusters" type="INT-NUMBER" use="required"/>
+      <xs:attribute name="numberOfClusters" type="xs:nonNegativeInteger" use="required"/>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" ref="Cluster"/>
         <xs:element maxOccurs="unbounded" minOccurs="1" ref="ClusteringField"/>
@@ -1397,6 +1397,22 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="InterceptVector">
+    <xs:complexType>
+      <xs:attribute default="state" name="type">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="observation"/>
+            <xs:enumeration value="state"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:group ref="REAL-ARRAY"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Interval">
     <xs:complexType>
       <xs:attribute name="closure" use="required">
@@ -2078,6 +2094,14 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="ObservationVarianceMatrix">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="Matrix"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="OptimumLiftGraph">
     <xs:complexType>
       <xs:sequence>
@@ -2350,11 +2374,24 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="PredictedStateCovarianceMatrix">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="Matrix"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="PredictiveModelQuality">
     <xs:complexType>
       <xs:attribute name="AIC" type="NUMBER" use="optional"/>
       <xs:attribute name="AICc" type="NUMBER" use="optional"/>
+      <xs:attribute name="AUC" type="NUMBER" use="optional"/>
       <xs:attribute name="BIC" type="NUMBER" use="optional"/>
+      <xs:attribute name="F1" type="NUMBER" use="optional"/>
+      <xs:attribute name="F2" type="NUMBER" use="optional"/>
+      <xs:attribute name="Fhalf" type="NUMBER" use="optional"/>
+      <xs:attribute name="accuracy" type="NUMBER" use="optional"/>
       <xs:attribute name="adj-r-squared" type="NUMBER" use="optional"/>
       <xs:attribute name="dataName" type="xs:string" use="optional"/>
       <xs:attribute default="training" name="dataUsage">
@@ -2374,8 +2411,11 @@
       <xs:attribute name="numOfPredictors" type="NUMBER" use="optional"/>
       <xs:attribute name="numOfRecords" type="NUMBER" use="optional"/>
       <xs:attribute name="numOfRecordsWeighted" type="NUMBER" use="optional"/>
+      <xs:attribute name="precision" type="NUMBER" use="optional"/>
       <xs:attribute name="r-squared" type="NUMBER" use="optional"/>
+      <xs:attribute name="recall" type="NUMBER" use="optional"/>
       <xs:attribute name="rootMeanSquaredError" type="NUMBER" use="optional"/>
+      <xs:attribute name="specificity" type="NUMBER" use="optional"/>
       <xs:attribute name="sumSquaredError" type="NUMBER" use="optional"/>
       <xs:attribute name="sumSquaredRegression" type="NUMBER" use="optional"/>
       <xs:attribute name="targetField" type="FIELD-NAME" use="required"/>
@@ -2718,7 +2758,13 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="SeasonalTrendDecomposition"/>
+  <xs:element name="SeasonalTrendDecomposition">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Seasonality_ExpoSmooth">
     <xs:complexType>
       <xs:attribute name="delta" type="REAL-NUMBER" use="optional"/>
@@ -2758,6 +2804,14 @@
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
         <xs:element maxOccurs="unbounded" ref="Segment"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SelectedStateCovarianceMatrix">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element ref="Matrix"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -2914,7 +2968,13 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="SpectralAnalysis"/>
+  <xs:element name="SpectralAnalysis">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="StateSpaceModel">
     <xs:complexType>
       <xs:attribute default="0" name="intercept" type="REAL-NUMBER"/>
@@ -2923,8 +2983,12 @@
       <xs:sequence>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="DynamicRegressor"/>
         <xs:element maxOccurs="unbounded" minOccurs="0" ref="Extension"/>
+        <xs:element minOccurs="0" ref="InterceptVector"/>
         <xs:element minOccurs="0" ref="MeasurementMatrix"/>
+        <xs:element minOccurs="0" ref="ObservationVarianceMatrix"/>
+        <xs:element minOccurs="0" ref="PredictedStateCovarianceMatrix"/>
         <xs:element minOccurs="0" ref="PsiVector"/>
+        <xs:element minOccurs="0" ref="SelectedStateCovarianceMatrix"/>
         <xs:element minOccurs="0" ref="StateVector"/>
         <xs:element minOccurs="0" ref="TransitionMatrix"/>
       </xs:sequence>
@@ -4150,6 +4214,8 @@
       <xs:enumeration value="clusterAffinity"/>
       <xs:enumeration value="clusterId"/>
       <xs:enumeration value="confidence"/>
+      <xs:enumeration value="confidenceIntervalLower"/>
+      <xs:enumeration value="confidenceIntervalUpper"/>
       <xs:enumeration value="consequent"/>
       <xs:enumeration value="decision"/>
       <xs:enumeration value="entityAffinity"/>
